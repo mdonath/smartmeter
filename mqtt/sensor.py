@@ -56,7 +56,8 @@ class P1Sensor(object):
 		except:
 			self.serial.close()
 			print("Error reading data from serial connection")
-			sys.exit(1)
+			#sys.exit(1)
+			return "----"
 
 		return str(raw_data, "utf-8").strip()
 
@@ -74,10 +75,13 @@ class MqttEnergyClient(object):
 		self.parse_and_publish(data, "home/energy/gas", r"0\-1:24\.2\.1\([0-9]{12}S\)\((.+)\*m3\)")
 
 	def parse_and_publish(self, data, topic, regexp):
-		match = re.match(regexp, data)
-		if match is not None:
-			value = "{:0.3f}".format(float(match.group(1)))
-			self.mqttc.publish(topic, value)
+		if data == '----':
+			self.mqttc.publish(topic, '----')
+		else:
+			match = re.match(regexp, data)
+			if match is not None:
+				value = "{:0.3f}".format(float(match.group(1)))
+				self.mqttc.publish(topic, value)
 
 
 if __name__ == "__main__":
